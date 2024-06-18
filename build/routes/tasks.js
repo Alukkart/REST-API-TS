@@ -16,11 +16,11 @@ const router = (0, express_1.Router)();
 const prisma = new client_1.PrismaClient();
 function addTask(req) {
     return __awaiter(this, void 0, void 0, function* () {
-        let result = false;
         if (req.cookies.jwt == undefined) {
             return false;
         }
         ;
+        let result = false;
         const jwt = (0, jsonwebtoken_1.verify)(req.cookies.jwt, 'secret');
         try {
             yield prisma.tasks.create({
@@ -67,7 +67,7 @@ function getAllTasks(req) {
         let result = false;
         const jwt = (0, jsonwebtoken_1.verify)(req.cookies.jwt, 'secret');
         try {
-            yield prisma.tasks.findMany({
+            return yield prisma.tasks.findMany({
                 where: {
                     user_id: (yield prisma.users.findFirstOrThrow({
                         where: {
@@ -79,7 +79,6 @@ function getAllTasks(req) {
                     })).id
                 }
             });
-            result = true;
         }
         catch (_a) { }
         ;
@@ -109,22 +108,14 @@ function getTask(req) {
         const jwt = (0, jsonwebtoken_1.verify)(req.cookies.jwt, 'secret');
         let result;
         try {
-            result = yield prisma.tasks.findFirstOrThrow({
+            return yield prisma.tasks.findFirstOrThrow({
                 where: {
-                    user_id: (yield prisma.users.findFirstOrThrow({
-                        where: {
-                            email: jwt.data
-                        },
-                        select: {
-                            id: true
-                        }
-                    })).id,
                     id: Number(req.params.id)
                 }
             });
         }
         catch (e) {
-            result = false;
+            console.log(e);
         }
         ;
         return result;
@@ -152,12 +143,6 @@ function updateTask(req) {
         ;
         let result = false;
         const jwt = (0, jsonwebtoken_1.verify)(req.cookies.jwt, 'secret');
-        const task = {
-            user_id: Number(jwt.data),
-            title: req.body.title,
-            description: req.body.description,
-            status: req.body.status
-        };
         try {
             yield prisma.tasks.update({
                 where: {

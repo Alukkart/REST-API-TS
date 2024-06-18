@@ -1,4 +1,4 @@
-import { Response, Router, Request } from 'express';
+import { Router, Request } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { verify } from 'jsonwebtoken';
 
@@ -7,14 +7,14 @@ const prisma = new PrismaClient();
 
 interface IJwtPayload {
     data: string
-  }
+}
 
 async function addTask(req:Request) {
-    let result = false;
-
     if(req.cookies.jwt == undefined){return false};
 
+    let result = false;
     const jwt = verify(req.cookies.jwt, 'secret') as IJwtPayload;
+
     try{
         await prisma.tasks.create({
             data: {
@@ -49,7 +49,7 @@ async function getAllTasks(req:Request) {
     const jwt = verify(req.cookies.jwt, 'secret') as IJwtPayload;
 
     try{
-        await prisma.tasks.findMany({
+        return await prisma.tasks.findMany({
             where:{
                 user_id:(await prisma.users.findFirstOrThrow({
                     where: {
@@ -61,7 +61,7 @@ async function getAllTasks(req:Request) {
                 })).id
             }
         });
-        result = true;
+
     }catch{};
     return result
 }
@@ -80,7 +80,7 @@ async function getTask(req:Request) {
     let result;
 
     try{
-        result = await prisma.tasks.findFirstOrThrow({
+        return await prisma.tasks.findFirstOrThrow({
             where:{
                 user_id:(await prisma.users.findFirstOrThrow({
                     where: {
@@ -93,7 +93,7 @@ async function getTask(req:Request) {
                 id: Number(req.params.id)
             }
         });
-    }catch(e){result = false};
+    }catch(e){console.log(e)};
     return result
 }
 
@@ -108,12 +108,6 @@ async function updateTask(req:Request) {
     if(req.cookies.jwt == undefined){return false};
     let result = false;
     const jwt = verify(req.cookies.jwt, 'secret') as IJwtPayload;
-    const task = {
-        user_id: Number(jwt.data),
-        title: req.body.title,
-        description: req.body.description,
-        status: req.body.status
-    };
 
     try{
         await prisma.tasks.update({
