@@ -21,44 +21,21 @@ const router = (0, express_1.default)();
 const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const passwordRegex = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}/;
 ;
-function login(email, password) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const user = yield prisma.users.findFirstOrThrow({
-                where: {
-                    email: email
-                }
-            });
-            return (0, bcrypt_1.compare)(password, user.password).then(function (checkResult) {
-                return checkResult;
-            });
-        }
-        catch (e) { }
-        ;
-    });
-}
-;
 function register(data) {
     return __awaiter(this, void 0, void 0, function* () {
-        let result = false;
+        var result = false;
         if (emailRegex.test(data.email) && passwordRegex.test(data.password)) {
-            (0, bcrypt_1.genSalt)(10, function (err, salt) {
-                (0, bcrypt_1.hash)(data.password, salt, function (err, hash) {
-                    return __awaiter(this, void 0, void 0, function* () {
-                        try {
-                            yield prisma.users.create({
-                                data: {
-                                    email: data.email,
-                                    password: hash
-                                }
-                            });
-                            result = true;
-                        }
-                        catch (e) { }
-                        ;
-                    });
+            try {
+                yield prisma.users.create({
+                    data: {
+                        email: data.email,
+                        password: (0, bcrypt_1.hashSync)(data.password, (0, bcrypt_1.genSaltSync)(10))
+                    }
                 });
-            });
+                result = true;
+            }
+            catch (e) { }
+            ;
         }
         ;
         return result;
@@ -80,6 +57,23 @@ router.post('/register', function (req, res) {
         });
     });
 });
+function login(email, password) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const user = yield prisma.users.findFirstOrThrow({
+                where: {
+                    email: email
+                }
+            });
+            return (0, bcrypt_1.compare)(password, user.password).then(function (checkResult) {
+                return checkResult;
+            });
+        }
+        catch (e) { }
+        ;
+    });
+}
+;
 router.post('/login', function (req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         login(req.body.email, req.body.password).then((result) => {

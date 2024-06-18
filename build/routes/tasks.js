@@ -187,9 +187,7 @@ function updateTask(req) {
             });
             result = true;
         }
-        catch (e) {
-            console.log(e);
-        }
+        catch (e) { }
         ;
         return result;
     });
