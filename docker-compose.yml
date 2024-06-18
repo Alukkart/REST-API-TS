@@ -1,0 +1,27 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8888:8888"
+    depends_on:
+      - db
+    restart: always
+
+  db:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: postgres
+    expose:
+      - "5432"
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    command: -p 5432
+
+volumes:
+  pgdata:
+    driver: local
